@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Dashboard" %}{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">{% trans "User Panel" %}</h1>
+<div class="grid md:grid-cols-4 gap-4 mb-7">
+  <a href="{% url 'accounts:edit_profile' %}" class="surface p-4 hover:translate-y-[-3px] transition">{% trans "Edit Profile" %}</a>
+  <a href="{% url 'accounts:order_history' %}" class="surface p-4 hover:translate-y-[-3px] transition">{% trans "Order History" %}</a>
+  <a href="{% url 'accounts:wishlist' %}" class="surface p-4 hover:translate-y-[-3px] transition">{% trans "Favorites" %}</a>
+  <a href="{% url 'accounts:address_list' %}" class="surface p-4 hover:translate-y-[-3px] transition">{% trans "Addresses" %}</a>
+</div>
+<h2 class="text-xl font-semibold mb-3">{% trans "Recent Orders" %}</h2>
+<div class="space-y-2">
+  {% for order in recent_orders %}
+    <div class="surface p-3">{{ order.order_number }} - {{ order.total_amount }} - {{ order.status }}</div>
+  {% empty %}
+    <div class="surface p-4">{% trans "No orders yet." %}</div>
+  {% endfor %}
+</div>
+{% endblock %}

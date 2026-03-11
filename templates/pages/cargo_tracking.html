@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">{% trans "Cargo Tracking" %}</h1>
+<form method="get" class="mb-6 flex gap-2">
+  <input class="input w-full md:w-96" type="text" name="code" value="{{ code }}" placeholder="{% trans 'Tracking code' %}">
+  <button class="btn btn-primary" type="submit">{% trans "Query" %}</button>
+</form>
+{% if tracking %}
+<div class="surface p-5">
+  <p><strong>{% trans "Order" %}:</strong> {{ tracking.order.order_number }}</p>
+  <p><strong>{% trans "Carrier" %}:</strong> {{ tracking.carrier_name }}</p>
+  <p><strong>{% trans "Status" %}:</strong> {{ tracking.current_status }}</p>
+  <p><strong>{% trans "Updated" %}:</strong> {{ tracking.updated_at }}</p>
+</div>
+{% elif code %}
+<div class="surface p-5">{% trans "No shipment found for this code." %}</div>
+{% endif %}
+{% endblock %}

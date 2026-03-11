@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Products" %} - Albaniashop{% endblock %}
+{% block content %}
+<section class="mb-8 surface p-6 md:p-7">
+  <div class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+    <div>
+      <p class="text-sm font-semibold text-[var(--brand-700)]">{% trans "Category Detail" %}</p>
+      <h1 class="text-3xl md:text-4xl font-bold section-title mt-1">
+        {% if selected_category %}{{ selected_category.name }}{% else %}{% trans "Product Catalog" %}{% endif %}
+      </h1>
+      <p class="text-slate-600 mt-2 max-w-3xl">
+        {% if selected_category %}
+          {% trans "Use detailed filters to narrow products, prices, stock status and active brands in this category." %}
+        {% else %}
+          {% trans "Browse all categories and refine results with marketplace-style filters." %}
+        {% endif %}
+      </p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 min-w-full xl:min-w-[420px] xl:max-w-[520px]">
+      <div class="mini-stat">
+        <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Products" %}</p>
+        <p class="text-2xl font-bold mt-1">{{ product_count }}</p>
+      </div>
+      <div class="mini-stat">
+        <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Brands" %}</p>
+        <p class="text-2xl font-bold mt-1">{{ brands|length }}</p>
+      </div>
+      <div class="mini-stat col-span-2 md:col-span-1">
+        <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Price Range" %}</p>
+        <p class="text-sm font-bold mt-2">
+          {% if price_range.min_price %}
+            {{ price_range.min_price }} - {{ price_range.max_price }}
+          {% else %}
+            -
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="grid md:grid-cols-5 gap-6">
+  <aside class="md:col-span-1 space-y-4">
+    <section class="filter-box">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <h2 class="font-bold section-title">{% trans "Categories" %}</h2>
+        {% if category_filter_title %}
+          <span class="text-xs text-slate-500">{{ category_filter_title }}</span>
+        {% endif %}
+      </div>
+      <ul class="space-y-2 text-sm">
+        <li><a href="{% url 'catalog:product_list' %}" class="hover:text-[var(--brand-700)] {% if not selected_category %}font-bold text-[var(--brand-700)]{% endif %}">{% trans "All" %}</a></li>
+        {% for category in filter_categories %}
+          <li><a href="{% url 'catalog:product_list_by_category' category.slug %}" class="hover:text-[var(--brand-700)] {% if selected_category and selected_category.slug == category.slug %}font-bold text-[var(--brand-700)]{% endif %}">{{ category.name }}</a></li>
+        {% empty %}
+          <li class="text-slate-500">{% trans "No subcategories found." %}</li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <form method="get" class="space-y-4">
+      <section class="filter-box">
+        <h2 class="font-bold mb-3 section-title">{% trans "Search & Sort" %}</h2>
+        <div class="space-y-3">
+          <input type="text" name="q" value="{{ query }}" class="input" placeholder="{% trans 'Search in this category' %}">
+          <select name="sort" class="input">
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>{% trans "Newest" %}</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>{% trans "Price Low to High" %}</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>{% trans "Price High to Low" %}</option>
+            <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>{% trans "Name A-Z" %}</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="filter-box">
+        <h2 class="font-bold mb-3 section-title">{% trans "Price Filter" %}</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <input type="number" step="0.01" name="min_price" value="{{ min_price }}" class="input" placeholder="{% trans 'Min' %}">
+          <input type="number" step="0.01" name="max_price" value="{{ max_price }}" class="input" placeholder="{% trans 'Max' %}">
+        </div>
+      </section>
+
+      <section class="filter-box">
+        <h2 class="font-bold mb-3 section-title">{% trans "Availability" %}</h2>
+        <label class="flex items-center gap-2 text-sm mb-2">
+          <input type="checkbox" name="in_stock" value="1" {% if in_stock %}checked{% endif %}>
+          <span>{% trans "Only in stock" %}</span>
+        </label>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="on_sale" value="1" {% if on_sale %}checked{% endif %}>
+          <span>{% trans "Only discounted products" %}</span>
+        </label>
+      </section>
+
+      <section class="filter-box">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-bold section-title">{% trans "Brands" %}</h2>
+          <span class="text-xs text-slate-500">{{ brands|length }}</span>
+        </div>
+        <div class="space-y-2 max-h-56 overflow-auto pr-1 text-sm">
+          {% if brands %}
+            {% for brand in brands %}
+              <label class="flex items-center gap-2">
+                <input type="radio" name="brand" value="{{ brand.slug }}" {% if selected_brand == brand.slug %}checked{% endif %}>
+                <span>{{ brand.name }}</span>
+              </label>
+            {% endfor %}
+            <label class="flex items-center gap-2 pt-2 border-t border-slate-200">
+              <input type="radio" name="brand" value="" {% if not selected_brand %}checked{% endif %}>
+              <span>{% trans "All Brands" %}</span>
+            </label>
+          {% else %}
+            <p class="text-sm text-slate-500">{% trans "No brand found in this category yet." %}</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="filter-box">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-bold section-title">{% trans "Tags" %}</h2>
+          <span class="text-xs text-slate-500">{{ tags|length }}</span>
+        </div>
+        <div class="space-y-2 max-h-56 overflow-auto pr-1 text-sm">
+          {% if tags %}
+            {% for tag in tags %}
+              <label class="flex items-center gap-2">
+                <input type="checkbox" name="tag" value="{{ tag.slug }}" {% if tag.slug in selected_tags %}checked{% endif %}>
+                <span>{{ tag.name }}</span>
+              </label>
+            {% endfor %}
+          {% else %}
+            <p class="text-sm text-slate-500">{% trans "No tags available for this category." %}</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <div class="flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary">{% trans "Apply Filters" %}</button>
+        <a href="{% if selected_category %}{% url 'catalog:product_list_by_category' selected_category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}" class="btn btn-secondary">{% trans "Clear" %}</a>
+      </div>
+    </form>
+  </aside>
+
+  <div class="md:col-span-4 space-y-5">
+    <section class="surface p-4">
+      <div class="flex flex-wrap gap-2 items-center justify-between">
+        <div class="flex flex-wrap gap-2">
+          {% if selected_category %}<span class="filter-chip">{{ selected_category.name }}</span>{% endif %}
+          {% if selected_brand %}<span class="filter-chip">{{ selected_brand }}</span>{% endif %}
+          {% if in_stock %}<span class="filter-chip">{% trans "In Stock" %}</span>{% endif %}
+          {% if on_sale %}<span class="filter-chip">{% trans "On Sale" %}</span>{% endif %}
+          {% if min_price %}<span class="filter-chip">{% trans "Min" %}: {{ min_price }}</span>{% endif %}
+          {% if max_price %}<span class="filter-chip">{% trans "Max" %}: {{ max_price }}</span>{% endif %}
+          {% for tag_slug in selected_tags %}
+            <span class="filter-chip">#{{ tag_slug }}</span>
+          {% endfor %}
+        </div>
+        <p class="text-sm text-slate-500">{{ product_count }} {% trans "products listed" %}</p>
+      </div>
+    </section>
+
+    <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      {% for product in products %}
+        <article class="product-card">
+          <a class="product-card-link" href="{{ product.get_absolute_url }}" aria-label="{{ product.name }}"></a>
+          {% if product.images.first %}
+            <img class="product-thumb" src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+          {% else %}
+            <div class="product-thumb"></div>
+          {% endif %}
+          <div class="product-card-body">
+            <div class="product-meta">
+              <span class="product-brand">{{ product.brand.name|default:'Albaniashop' }}</span>
+              {% if product.discounted_price %}
+                <span class="badge badge-discount">{% trans "Sale" %}</span>
+              {% else %}
+                <span class="product-rating">4.6</span>
+              {% endif %}
+            </div>
+            <h3 class="product-title">{{ product.name }}</h3>
+            <div class="product-price-wrap">
+              {% if product.discounted_price %}<span class="price-old">{{ product.price }}</span>{% endif %}
+              <span class="price-current">{{ product.current_price }}</span>
+            </div>
+            <a href="{% url 'cart:add' product.id %}" class="market-add-btn">{% trans "Add to Cart" %}</a>
+            <a href="{{ product.get_absolute_url }}" class="text-xs font-semibold text-[var(--brand-700)]">{% trans "Go to product detail" %}</a>
+          </div>
+        </article>
+      {% empty %}
+        <div class="surface p-6 sm:col-span-2 xl:col-span-3">
+          <h3 class="font-bold section-title">{% trans "No products matched these filters." %}</h3>
+          <p class="text-sm text-slate-600 mt-2">{% trans "Try clearing some filters or changing price and brand selections." %}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

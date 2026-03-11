@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">{% trans "Shopping Cart" %}</h1>
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-3">
+    {% for item in cart.items.all %}
+    <article class="surface p-4 flex flex-wrap justify-between gap-3 items-center">
+      <div>
+        <h3 class="font-bold"><a href="{{ item.product.get_absolute_url }}" class="hover:text-[var(--brand-700)]">{{ item.product.name }}</a></h3>
+        <p class="text-sm text-slate-500 mt-1">{{ item.unit_price }} x {{ item.quantity }} = {{ item.subtotal }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <form action="{% url 'cart:update_quantity' item.id %}" method="post">{% csrf_token %}<input type="hidden" name="action" value="decrease"><button class="btn btn-secondary !py-2">-</button></form>
+        <span class="font-bold">{{ item.quantity }}</span>
+        <form action="{% url 'cart:update_quantity' item.id %}" method="post">{% csrf_token %}<input type="hidden" name="action" value="increase"><button class="btn btn-secondary !py-2">+</button></form>
+        <a href="{% url 'cart:remove' item.id %}" class="btn btn-secondary !py-2 !text-red-600">{% trans "Remove" %}</a>
+      </div>
+    </article>
+    {% empty %}
+    <div class="surface p-5">{% trans "Your cart is empty." %}</div>
+    {% endfor %}
+  </div>
+
+  <aside class="surface p-5 h-fit">
+    <h2 class="text-xl font-bold">{% trans "Order Summary" %}</h2>
+    <p class="text-sm text-slate-500 mt-1">{% trans "Taxes and shipping calculated at checkout." %}</p>
+    <div class="mt-4 border-t pt-4 flex items-center justify-between">
+      <span>{% trans "Total" %}</span>
+      <strong class="text-xl">{{ cart.total }}</strong>
+    </div>
+    <a href="{% url 'orders:checkout' %}" class="btn btn-primary mt-4 w-full text-center">{% trans "Proceed to Checkout" %}</a>
+  </aside>
+</div>
+{% endblock %}

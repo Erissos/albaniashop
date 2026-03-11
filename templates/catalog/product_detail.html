@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{{ product.name }} - Albaniashop{% endblock %}
+{% block content %}
+<div class="grid lg:grid-cols-2 gap-8 mb-8">
+  <div class="surface p-4">
+    {% if product.images.first %}
+      <div class="grid md:grid-cols-[88px_minmax(0,1fr)] gap-4 items-start">
+        <div class="order-2 md:order-1 grid grid-cols-4 md:grid-cols-1 gap-3">
+          {% for img in product.images.all|slice:':6' %}
+            <button type="button" class="border border-slate-200 rounded-xl overflow-hidden bg-white hover:border-[var(--brand-500)] transition" data-gallery-thumb>
+              <img src="{{ img.image.url }}" alt="{{ product.name }}" data-gallery-target="{{ img.image.url }}" class="h-20 md:h-24 w-full object-cover">
+            </button>
+          {% endfor %}
+        </div>
+        <button type="button" class="order-1 md:order-2 w-full rounded-2xl overflow-hidden bg-[#fff7ed] border border-[var(--neutral-200)] cursor-zoom-in" data-gallery-open>
+          <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full aspect-[4/5] object-contain bg-[#fffaf5]" data-gallery-main>
+        </button>
+      </div>
+    {% else %}
+      <div class="h-80 bg-slate-100 rounded-lg grid place-items-center text-slate-500">{% trans "No image" %}</div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="flex items-start justify-between gap-3">
+      <h1 class="text-3xl font-bold">{{ product.name }}</h1>
+      {% if product.discounted_price %}<span class="badge badge-discount">{% trans "Campaign" %}</span>{% endif %}
+    </div>
+    <p class="text-slate-600 mt-2">{{ product.short_description }}</p>
+
+    <div class="surface p-4 mt-4">
+      <div class="flex items-center gap-3">
+        {% if product.discounted_price %}<span class="line-through text-slate-400">{{ product.price }}</span>{% endif %}
+        <span class="font-bold text-3xl text-[var(--brand-700)]">{{ product.current_price }}</span>
+      </div>
+      <p class="mt-2 text-sm">{% if product.stock_quantity > 0 %}<span class="badge badge-stock">{% trans "In Stock" %}</span>{% else %}<span class="badge bg-red-100 text-red-700">{% trans "Out of Stock" %}</span>{% endif %}</p>
+      <p class="text-xs text-slate-500 mt-2">SKU: {{ product.sku }}</p>
+    </div>
+
+    <form action="{% url 'cart:add' product.id %}" method="post" class="mt-5 space-y-3">
+      {% csrf_token %}
+      {% if product.variations.all %}
+        <label class="block text-sm font-semibold">{% trans "Variation" %}</label>
+        <select name="variation_id" class="input">
+          <option value="">{% trans "Choose" %}</option>
+          {% for variation in product.variations.all %}
+            <option value="{{ variation.id }}">{{ variation.variation_type }} - {{ variation.value }}</option>
+          {% endfor %}
+        </select>
+      {% endif %}
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit">{% trans "Add to Cart" %}</button>
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:toggle_wishlist' product.id %}" class="btn btn-secondary">{% trans "Add to Favorites" %}</a>
+        {% endif %}
+        {% if site_settings and site_settings.whatsapp_number %}
+          <a href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank" rel="noopener" class="btn btn-secondary">{% trans "Ask on WhatsApp" %}</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <div class="surface p-4 mt-5">
+      <h2 class="font-bold">{% trans "Product Description" %}</h2>
+      <p class="text-sm text-slate-600 mt-2">{{ product.description }}</p>
+    </div>
+  </div>
+</div>
+
+{% if product.images.first %}
+  <div class="fixed inset-0 z-[80] hidden items-center justify-center bg-slate-950/80 p-4" data-gallery-modal>
+    <button type="button" class="absolute top-4 right-4 rounded-full bg-white/10 px-4 py-2 text-white border border-white/20" data-gallery-close>{% trans "Close" %}</button>
+    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="max-h-[90vh] max-w-[92vw] rounded-2xl bg-white object-contain" data-gallery-modal-image>
+  </div>
+{% endif %}
+
+<section class="surface p-5 mb-8">
+  <h2 class="text-xl font-bold mb-3">{% trans "Specifications & Reviews" %}</h2>
+  <div class="grid gap-4 md:grid-cols-2">
+    <div>
+      <h3 class="font-semibold">{% trans "Specifications" %}</h3>
+      <ul class="mt-2 text-sm text-slate-600 space-y-1">
+        <li>{% trans "Category" %}: {{ product.category.name }}</li>
+        <li>{% trans "Brand" %}: {{ product.brand.name|default:'-' }}</li>
+        <li>{% trans "Stock" %}: {{ product.stock_quantity }}</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="font-semibold">{% trans "Customer Reviews" %}</h3>
+      <p class="text-sm text-slate-600 mt-2">{% trans "Review module can be connected to database for live ratings and comments." %}</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2 class="text-2xl font-bold mb-4">{% trans "Similar Products" %}</h2>
+  <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for item in related_products %}
+      <a href="{{ item.get_absolute_url }}" class="product-card p-4">
+        <h3 class="font-bold">{{ item.name }}</h3>
+        <p class="text-sm text-slate-500 mt-1">{{ item.short_description }}</p>
+        <p class="font-bold mt-2">{{ item.current_price }}</p>
+      </a>
+    {% empty %}
+      <div class="surface p-4">{% trans "No similar products found." %}</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

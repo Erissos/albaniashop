@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">{% trans "Contracts and Policies" %}</h1>
+<div class="space-y-4">
+  <section class="surface p-5">
+    <h2 class="font-semibold mb-2">{% trans "Distance Selling Contract" %}</h2>
+    <p>{% trans "This section includes delivery, return and payment obligations." %}</p>
+  </section>
+  <section class="surface p-5">
+    <h2 class="font-semibold mb-2">{% trans "Privacy Policy" %}</h2>
+    <p>{% trans "This section includes personal data processing and cookie policy details." %}</p>
+  </section>
+  <section class="surface p-5">
+    <h2 class="font-semibold mb-2">{% trans "Return and Refund Policy" %}</h2>
+    <p>{% trans "This section includes return periods, product conditions and repayment process." %}</p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<div class="max-w-xl surface p-6">
+  <h1 class="text-xl font-bold mb-2">{% trans "Delete Address" %}</h1>
+  <p class="mb-4">{{ address }}</p>
+  <form method="post">{% csrf_token %}<button class="btn !bg-[var(--danger-500)] !text-white" type="submit">{% trans "Confirm" %}</button></form>
+</div>
+{% endblock %}

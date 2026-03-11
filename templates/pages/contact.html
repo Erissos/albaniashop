@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+<section class="hero-panel p-7 md:p-10 mb-8">
+  <div class="max-w-3xl relative z-10">
+    <span class="badge badge-discount">{% trans "Sales & Support Desk" %}</span>
+    <h1 class="mt-4 text-4xl font-bold">{% trans "Contact our sales team with a cleaner, faster form experience" %}</h1>
+    <p class="mt-3 text-orange-50">{% trans "Share your order needs, wholesale questions or partnership requests. Our team will respond with the right product and pricing guidance." %}</p>
+  </div>
+</section>
+
+<div class="grid xl:grid-cols-[1.15fr_0.85fr] gap-6 items-start">
+  <div id="sales-form" class="contact-card p-6 md:p-7 scroll-mt-28">
+    <div class="flex items-center justify-between gap-4 mb-6">
+      <div>
+        <h2 class="text-2xl font-bold section-title">{% trans "Contact Sales" %}</h2>
+        <p class="text-sm text-slate-600 mt-1">{% trans "Complete the form below and we will get back to you shortly." %}</p>
+      </div>
+      <span class="filter-chip">{% trans "Response within 24 hours" %}</span>
+    </div>
+
+    <form method="post" class="grid md:grid-cols-2 gap-4">
+      {% csrf_token %}
+      <div class="field-shell">
+        <label for="{{ form.name.id_for_label }}">{% trans "Full Name" %}</label>
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div class="field-shell">
+        <label for="{{ form.email.id_for_label }}">{% trans "Email Address" %}</label>
+        {{ form.email }}
+        {{ form.email.errors }}
+      </div>
+      <div class="field-shell md:col-span-2">
+        <label for="{{ form.subject.id_for_label }}">{% trans "Subject" %}</label>
+        {{ form.subject }}
+        {{ form.subject.errors }}
+      </div>
+      <div class="field-shell md:col-span-2">
+        <label for="{{ form.message.id_for_label }}">{% trans "Message" %}</label>
+        {{ form.message }}
+        {{ form.message.errors }}
+      </div>
+      <div class="md:col-span-2 flex flex-wrap items-center justify-between gap-3 pt-2">
+        <p class="text-sm text-slate-500">{% trans "For urgent requests, include your order code or product SKU in the message." %}</p>
+        <button class="btn btn-primary" type="submit">{% trans "Send Request" %}</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="space-y-4">
+    <div class="contact-highlight p-5">
+      <h2 class="text-xl font-bold section-title">{% trans "Why reach out?" %}</h2>
+      <div class="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
+        <div class="mini-stat">
+          <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Wholesale" %}</p>
+          <p class="mt-1 font-bold">{% trans "Bulk pricing and stock planning" %}</p>
+        </div>
+        <div class="mini-stat">
+          <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Orders" %}</p>
+          <p class="mt-1 font-bold">{% trans "Fast support for shipping and payment questions" %}</p>
+        </div>
+        <div class="mini-stat">
+          <p class="text-xs uppercase tracking-wide text-slate-500">{% trans "Partnerships" %}</p>
+          <p class="mt-1 font-bold">{% trans "Brand onboarding and marketplace collaboration" %}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="contact-card p-5 space-y-3">
+      <h2 class="text-xl font-bold section-title">{% trans "Contact Information" %}</h2>
+      <p><strong>Email:</strong> {{ site_settings.email|default:'info@albaniashop.com' }}</p>
+      <p><strong>{% trans "Phone" %}:</strong> {{ site_settings.phone|default:'+355 00 000 0000' }}</p>
+      <p><strong>{% trans "Address" %}:</strong> {{ site_settings.address|default:'Tirana, Albania' }}</p>
+      <div class="pt-2 flex flex-wrap gap-2">
+        {% if site_settings.whatsapp_number %}
+          <a class="btn btn-secondary inline-flex" href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank" rel="noopener">WhatsApp</a>
+        {% endif %}
+        <a class="btn btn-primary inline-flex" href="mailto:{{ site_settings.email|default:'info@albaniashop.com' }}">{% trans "Send Email" %}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
