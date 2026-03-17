@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'django_filters',
     'core',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,25 +131,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'sq'
+LANGUAGE_CODE = 'tr'
 
 LANGUAGES = [
-    ('sq', 'Shqip'),
-    ('mk', 'Makedonski'),
-    ('tr', 'Turkce'),
+    ('tr', 'Türkçe'),
     ('en', 'English'),
 ]
 
-TIME_ZONE = 'Europe/Tirane'
+TIME_ZONE = 'Europe/Istanbul'
 
 USE_I18N = True
 
 USE_TZ = True
 
 AVAILABLE_CURRENCIES = [
+    ('TRY', 'Türk Lirası'),
     ('EUR', 'Euro'),
     ('USD', 'US Dollar'),
-    ('ALL', 'Albanian Lek'),
 ]
 
 
@@ -212,3 +212,11 @@ REST_FRAMEWORK = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# CORS
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
+    if origin.strip()
+]
+CORS_ALLOW_CREDENTIALS = True

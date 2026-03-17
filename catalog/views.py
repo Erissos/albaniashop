@@ -1,13 +1,11 @@
-from django.shortcuts import render
-
-from .services import CatalogService
+from core.storefront import storefront_redirect
 
 
 def product_list(request, category_slug=None):
-	context = CatalogService.get_listing_context(request.GET, category_slug=category_slug)
-	return render(request, 'catalog/product_list.jinja', context)
+	if category_slug:
+		return storefront_redirect(request, f'/category/{category_slug}')
+	return storefront_redirect(request, '/search')
 
 
 def product_detail(request, slug):
-	context = CatalogService.get_product_detail_context(slug)
-	return render(request, 'catalog/product_detail.jinja', context)
+	return storefront_redirect(request, f'/product/{slug}')

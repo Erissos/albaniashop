@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from catalog.models import Product, ProductVariation
+from core.storefront import storefront_redirect
 
 from .services import CartService
 from .models import CartItem
@@ -10,9 +11,7 @@ from .utils import get_or_create_cart
 
 
 def cart_detail(request):
-	cart = get_or_create_cart(request)
-	cart_items = cart.items.select_related('product', 'variation')
-	return render(request, 'cart/cart_detail.jinja', {'cart': cart, 'cart_items': cart_items})
+	return storefront_redirect(request, '/cart')
 
 
 def add_to_cart(request, product_id):

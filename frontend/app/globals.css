@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: clip;
+  background: #ffffff;
+  color: #1a1a2e;
+}
+
+@layer components {
+  .container-main {
+    @apply mx-auto w-full max-w-[1320px] px-4 md:px-6;
+  }
+
+  .btn-primary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-semibold text-white transition hover:bg-primary-dark active:scale-[0.98];
+  }
+
+  .btn-secondary {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-white px-6 text-sm font-semibold text-ink transition hover:border-primary hover:text-primary;
+  }
+
+  .btn-ghost {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-muted transition hover:bg-surface hover:text-ink;
+  }
+
+  .card {
+    @apply rounded-card border border-border bg-white;
+  }
+
+  .card-elevated {
+    @apply rounded-card bg-white shadow-card;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold;
+  }
+
+  .badge-primary {
+    @apply badge bg-primary text-white;
+  }
+
+  .badge-sale {
+    @apply badge bg-danger text-white;
+  }
+
+  .badge-success {
+    @apply badge bg-success text-white;
+  }
+
+  .input-field {
+    @apply h-11 w-full rounded-lg border border-border bg-white px-4 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-primary focus:ring-1 focus:ring-primary/20;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-ink md:text-2xl;
+  }
+
+  .icon-btn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted transition hover:bg-surface hover:text-ink;
+  }
+}
