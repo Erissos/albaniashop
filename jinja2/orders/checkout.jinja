@@ -1,0 +1,71 @@
+{% extends 'layouts/base.jinja' %}
+
+{% block title %}Porosia | Albaniashop{% endblock %}
+
+{% block content %}
+<div class="grid gap-6 lg:grid-cols-[1fr_400px]">
+    <div class="panel">
+        <h1 class="text-xl font-extrabold text-gray-900 mb-6">Përfundo porosinë</h1>
+        <form method="post" class="space-y-5">
+            {{ csrf_input }}
+            {% if form.errors %}
+                <div class="border border-red-200 bg-red-50 rounded-lg p-4 text-sm text-red-700">
+                    {% for field_name, errors in form.errors.items() %}
+                        {% for error in errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Adresa e ruajtur</label>
+                <select name="address" class="form-input">
+                    <option value="">Zgjidhni një adresë</option>
+                    {% for address in addresses %}
+                        <option value="{{ address.id }}" {{ 'selected' if selected_address_id == str(address.id) else '' }}>{{ address.title }} | {{ address.full_name }} | {{ address.city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Kupon zbritje</label>
+                    <input type="text" name="coupon_code" value="{{ form.data.get('coupon_code', '') }}" class="form-input" placeholder="Kodi i kuponit">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Mënyra e pagesës</label>
+                    <div class="form-input bg-gray-50 text-gray-500">Kartë, PayPal, Cash</div>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Shënim për porosinë</label>
+                <textarea name="note" rows="3" class="form-input" placeholder="Udhëzime shtesë (opsionale)">{{ form.data.get('note', '') }}</textarea>
+            </div>
+            <button type="submit" class="btn-pink btn-lg w-full">Përfundo porosinë</button>
+        </form>
+    </div>
+
+    <aside class="panel h-fit sticky top-24">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Përmbledhja e porosisë</h2>
+        <div class="space-y-3">
+            {% for item in cart_items %}
+                <div class="flex items-start justify-between gap-3 text-sm">
+                    <div>
+                        <p class="font-semibold text-gray-800">{{ item.product.name }}</p>
+                        <p class="text-gray-400">{{ item.quantity }} x {{ item.unit_price|money }}</p>
+                    </div>
+                    <span class="text-gray-700 font-semibold">{{ item.subtotal|money }}</span>
+                </div>
+            {% endfor %}
+        </div>
+        {% if pricing_preview %}
+            <div class="border-t border-gray-100 mt-4 pt-4 space-y-2 text-sm text-gray-600">
+                <div class="flex justify-between"><span>Nëntotali</span><span>{{ pricing_preview.subtotal_amount|money }}</span></div>
+                <div class="flex justify-between"><span>Transporti</span><span>{{ pricing_preview.shipping_amount|money }}</span></div>
+                <div class="flex justify-between"><span>Taksa</span><span>{{ pricing_preview.tax_amount|money }}</span></div>
+                <div class="flex justify-between"><span>Zbritje</span><span class="text-pink-500">-{{ pricing_preview.discount_amount|money }}</span></div>
+                <div class="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-100"><span>Totali</span><span>{{ pricing_preview.total_amount|money }}</span></div>
+            </div>
+        {% endif %}
+    </aside>
+</div>
+{% endblock %}

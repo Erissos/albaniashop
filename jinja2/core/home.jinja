@@ -1,0 +1,223 @@
+{% extends 'layouts/base.jinja' %}
+{% from 'components/product_card.jinja' import product_card with context %}
+
+{% block title %}Albaniashop | Dyqani Online{% endblock %}
+
+{% block content %}
+{# ── Hero Slider Section ── #}
+<section class="hero-section fade-in">
+    <div class="hero-main flex items-center justify-center bg-gradient-to-br from-pink-100 via-pink-50 to-white">
+        <div class="text-center p-8 md:p-12">
+            <span class="inline-flex items-center rounded-full bg-white/80 px-4 py-1 text-xs font-bold uppercase tracking-[0.2em] text-pink-600 shadow-sm">Dyqani i preferuar online</span>
+            <h1 class="mt-5 text-4xl md:text-5xl font-extrabold text-gray-900">Mirë se vini në<br><span class="text-pink-500">Albaniashop</span></h1>
+            <p class="mt-4 text-gray-500 max-w-md mx-auto">Produkte cilësore, oferta reale dhe dërgesa të shpejta. Blini thjesht, sigurt dhe me paketim diskret.</p>
+            <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <a href="{{ url('core:all_products') }}" class="btn-pink btn-lg inline-flex">Shiko Produktet</a>
+                <a href="{{ url('core:all_products') }}?on_sale=1" class="btn-outline btn-lg inline-flex">Shiko Ofertat</a>
+            </div>
+            <div class="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-gray-600">
+                {% for metric in hero_metrics %}
+                    <div class="rounded-full bg-white/85 px-4 py-2 shadow-sm">
+                        <strong class="text-gray-900">{{ metric.value }}</strong> {{ metric.label }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="hero-side">
+        <div class="hero-side-item flex items-center justify-center bg-gradient-to-br from-pink-200 to-pink-100">
+            <div class="p-6 text-center">
+                <p class="text-lg font-bold text-gray-800">Oferta Speciale</p>
+                <p class="text-sm text-gray-500 mt-1">Deri në 50% zbritje</p>
+                <a href="{{ url('core:all_products') }}?on_sale=1" class="btn-pink btn-sm mt-3 inline-flex">SHIKO OFERTAT</a>
+            </div>
+        </div>
+        <div class="hero-side-item flex items-center justify-center bg-gradient-to-br from-pink-50 to-white">
+            <div class="p-6 text-center">
+                <p class="text-lg font-bold text-gray-800">Koleksionet e Reja</p>
+                <p class="text-sm text-gray-500 mt-1">Produktet më të fundit</p>
+                <a href="{{ url('core:all_products') }}?sort=newest" class="btn-pink btn-sm mt-3 inline-flex">POROSIT TANI</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ── Trust Badges ── #}
+<section class="trust-bar my-8">
+    <div class="trust-item">
+        <div class="trust-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+        </div>
+        <div>
+            <div class="trust-title">Produkte Europiane</div>
+            <div class="trust-subtitle">Të certifikuara</div>
+        </div>
+    </div>
+    <div class="trust-item">
+        <div class="trust-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        </div>
+        <div>
+            <div class="trust-title">Paketim i Fshehtë</div>
+            <div class="trust-subtitle">Anonim & Diskret</div>
+        </div>
+    </div>
+    <div class="trust-item">
+        <div class="trust-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+        </div>
+        <div>
+            <div class="trust-title">Pagesa Direkte</div>
+            <div class="trust-subtitle">Kartë, PayPal, Cash</div>
+        </div>
+    </div>
+    <div class="trust-item">
+        <div class="trust-icon">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+        </div>
+        <div>
+            <div class="trust-title">Transport Falas</div>
+            <div class="trust-subtitle">Shqipëri & Kosovë</div>
+        </div>
+    </div>
+</section>
+
+{% if trust_markers %}
+<section class="panel mb-10">
+    <div class="grid gap-4 md:grid-cols-3">
+        {% for marker in trust_markers %}
+            <div class="rounded-xl bg-pink-50 px-4 py-4 text-sm font-medium text-gray-700">{{ marker }}</div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+{# ── Categories Section ── #}
+<section class="my-10">
+    <div class="section-header">
+        <h2 class="section-title">Kategoritë Albaniashop</h2>
+        <div class="flex items-center gap-2">
+            <button onclick="scrollCarousel('categories', -1)" class="carousel-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+            </button>
+            <button onclick="scrollCarousel('categories', 1)" class="carousel-btn">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </button>
+        </div>
+    </div>
+                    {% for category in featured_categories %}
+                        <a href="{{ url('catalog:product_list_by_category', category_slug=category.slug) }}" class="category-card flex-shrink-0" style="width:200px;">
+                            {% if category.image %}
+                                <img src="{{ category.image.image.url }}" alt="{{ category.name }}">
+                            {% else %}
+                                <div class="w-full h-full bg-gradient-to-br from-pink-200 to-pink-100"></div>
+                            {% endif %}
+                            <div class="category-card-overlay">
+                                <h3>{{ category.name }}</h3>
+                                <p class="mb-2 text-xs text-white/80">{{ category.product_count }} produkte</p>
+                                <span class="category-card-btn">SHIKO PRODUKTET</span>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="panel w-full text-center text-sm text-gray-500">Nuk ka kategori aktive për t'u shfaqur.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# ── Offers / Campaign Products ── #}
+        <section class="my-10">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Oferta Albaniashop</h2>
+                    <a href="{{ url('core:all_products') }}?on_sale=1" class="section-link mt-1">Shiko të gjitha <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></a>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="scrollCarousel('offers', -1)" class="carousel-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+                    </button>
+                    <button onclick="scrollCarousel('offers', 1)" class="carousel-btn">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+                    </button>
+                </div>
+            </div>
+            {% if campaign_products %}
+            <div class="carousel-wrap">
+                <div id="offers" class="carousel-track" style="overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;">
+                    {% for product in campaign_products %}
+                        <div class="flex-shrink-0" style="width:220px;">
+                            {{ product_card(product) }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="panel text-center text-sm text-gray-500">Aktualisht nuk ka produkte në ofertë.</div>
+            {% endif %}
+        </section>
+
+        {# ── Featured Products Grid ── #}
+        <section class="my-10">
+            <div class="section-header">
+                <h2 class="section-title">Produktet e Zgjedhura</h2>
+                <a href="{{ url('core:all_products') }}" class="section-link">Shiko të gjitha <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></a>
+            </div>
+            {% if featured_products %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {% for product in featured_products %}
+                    {{ product_card(product) }}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="panel text-center text-sm text-gray-500">Öne çıkan ürünler henüz eklenmedi.</div>
+            {% endif %}
+        </section>
+
+        {# ── New Arrivals ── #}
+        <section class="my-10">
+            <div class="section-header">
+                <h2 class="section-title">Produkte të Reja</h2>
+                <a href="{{ url('core:all_products') }}?sort=newest" class="section-link">Shiko të gjitha <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></a>
+            </div>
+            {% if new_arrivals %}
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+                {% for product in new_arrivals %}
+                    {{ product_card(product) }}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="panel text-center text-sm text-gray-500">Yeni gelen ürünler henüz yok.</div>
+            {% endif %}
+        </section>
+
+        {# ── Brands Strip ── #}
+        {% if partner_brands %}
+        <section class="my-10 border rounded-xl border-gray-100 p-6">
+            <h2 class="text-center text-lg font-bold text-gray-700 mb-4">Brendet Partnere</h2>
+            <div class="flex flex-wrap justify-center gap-6 items-center">
+                {% for brand in partner_brands %}
+                    <span class="text-sm font-semibold text-gray-500 bg-gray-50 px-5 py-2 rounded-full">{{ brand.name }}</span>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+{% if partner_brands %}
+<section class="my-10 border rounded-xl border-gray-100 p-6">
+    <h2 class="text-center text-lg font-bold text-gray-700 mb-4">Brendet Partnere</h2>
+    <div class="flex flex-wrap justify-center gap-6 items-center">
+        {% for brand in partner_brands %}
+            <span class="text-sm font-semibold text-gray-500 bg-gray-50 px-5 py-2 rounded-full">{{ brand.name }}</span>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollCarousel(id, direction) {
+    var el = document.getElementById(id);
+    if (el) { el.scrollBy({ left: direction * 240, behavior: 'smooth' }); }
+}
+</script>
+{% endblock %}

@@ -17,7 +17,7 @@ def register(request):
 		login(request, user)
 		messages.success(request, 'Account created successfully.')
 		return redirect('accounts:dashboard')
-	return render(request, 'accounts/register.html', {'form': form})
+	return render(request, 'accounts/register.jinja', {'form': form})
 
 
 @login_required
@@ -27,7 +27,7 @@ def dashboard(request):
 	wishlist_items = request.user.wishlist_items.select_related('product')[:6]
 	return render(
 		request,
-		'accounts/dashboard.html',
+		'accounts/dashboard.jinja',
 		{'profile': profile, 'recent_orders': recent_orders, 'wishlist_items': wishlist_items},
 	)
 
@@ -48,12 +48,12 @@ def edit_profile(request):
 	form.fields['first_name'].initial = request.user.first_name
 	form.fields['last_name'].initial = request.user.last_name
 	form.fields['email'].initial = request.user.email
-	return render(request, 'accounts/edit_profile.html', {'form': form, 'profile': profile})
+	return render(request, 'accounts/edit_profile.jinja', {'form': form, 'profile': profile})
 
 
 @login_required
 def address_list(request):
-	return render(request, 'accounts/address_list.html', {'addresses': request.user.addresses.all()})
+	return render(request, 'accounts/address_list.jinja', {'addresses': request.user.addresses.all()})
 
 
 @login_required
@@ -66,7 +66,7 @@ def address_create(request):
 			Address.objects.filter(user=request.user, is_default=True).update(is_default=False)
 		address.save()
 		return redirect('accounts:address_list')
-	return render(request, 'accounts/address_form.html', {'form': form})
+	return render(request, 'accounts/address_form.jinja', {'form': form, 'form_title': 'Add address'})
 
 
 @login_required
@@ -79,7 +79,7 @@ def address_edit(request, pk):
 			Address.objects.filter(user=request.user, is_default=True).exclude(pk=address.pk).update(is_default=False)
 		address.save()
 		return redirect('accounts:address_list')
-	return render(request, 'accounts/address_form.html', {'form': form})
+	return render(request, 'accounts/address_form.jinja', {'form': form, 'form_title': 'Edit address'})
 
 
 @login_required
@@ -88,17 +88,20 @@ def address_delete(request, pk):
 	if request.method == 'POST':
 		address.delete()
 		return redirect('accounts:address_list')
-	return render(request, 'accounts/address_delete.html', {'address': address})
+	return render(request, 'accounts/address_delete.jinja', {'address': address})
 
 
 @login_required
 def wishlist(request):
 	items = request.user.wishlist_items.select_related('product')
-	return render(request, 'accounts/wishlist.html', {'items': items})
+	return render(request, 'accounts/wishlist.jinja', {'items': items})
 
 
 @login_required
 def toggle_wishlist(request, product_id):
+	if request.method != 'POST':
+		return redirect(request.META.get('HTTP_REFERER', 'core:all_products'))
+
 	product = get_object_or_404(Product, id=product_id, is_active=True)
 	item, created = WishlistItem.objects.get_or_create(user=request.user, product=product)
 	if not created:
@@ -109,4 +112,4 @@ def toggle_wishlist(request, product_id):
 @login_required
 def order_history(request):
 	orders = request.user.orders.prefetch_related('items', 'items__product')
-	return render(request, 'accounts/order_history.html', {'orders': orders})
+	return render(request, 'accounts/order_history.jinja', {'orders': orders})

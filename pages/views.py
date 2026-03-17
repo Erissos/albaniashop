@@ -7,11 +7,11 @@ from .forms import ContactForm
 
 
 def about(request):
-	return render(request, 'pages/about.html')
+	return render(request, 'pages/about.jinja')
 
 
 def contracts(request):
-	return render(request, 'pages/contracts.html')
+	return render(request, 'pages/contracts.jinja')
 
 
 def contact(request):
@@ -19,8 +19,8 @@ def contact(request):
 	if request.method == 'POST' and form.is_valid():
 		form.save()
 		messages.success(request, 'Your message has been sent.')
-		return render(request, 'pages/contact.html', {'form': ContactForm()})
-	return render(request, 'pages/contact.html', {'form': form})
+		return render(request, 'pages/contact.jinja', {'form': ContactForm()})
+	return render(request, 'pages/contact.jinja', {'form': form})
 
 
 def cargo_tracking(request):
@@ -30,4 +30,4 @@ def cargo_tracking(request):
 		tracking = ShipmentTracking.objects.filter(tracking_code=code).select_related('order').first()
 		if tracking is None:
 			messages.error(request, 'Tracking code not found.')
-	return render(request, 'pages/cargo_tracking.html', {'tracking': tracking, 'code': code})
+	return render(request, 'pages/cargo_tracking.jinja', {'tracking': tracking, 'code': code})
