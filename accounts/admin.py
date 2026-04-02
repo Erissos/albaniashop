@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Address, Profile, WishlistItem
+from .models import Address, ProductQuestion, Profile, SupportTicket, WishlistItem
 
 
 @admin.register(Profile)
@@ -20,3 +20,17 @@ class AddressAdmin(admin.ModelAdmin):
 class WishlistItemAdmin(admin.ModelAdmin):
 	list_display = ('user', 'product', 'added_at')
 	search_fields = ('user__username', 'product__name')
+
+
+@admin.register(ProductQuestion)
+class ProductQuestionAdmin(admin.ModelAdmin):
+	list_display = ('user', 'product', 'created_at', 'updated_at')
+	search_fields = ('user__username', 'product__name', 'question', 'answer')
+	list_filter = ('created_at', 'updated_at')
+
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+	list_display = ('user', 'subject', 'category', 'status', 'preferred_contact', 'created_at')
+	search_fields = ('user__username', 'subject', 'message')
+	list_filter = ('category', 'status', 'preferred_contact', 'created_at')

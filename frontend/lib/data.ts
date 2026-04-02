@@ -15,6 +15,21 @@ export type Review = {
   productSlug: string;
 };
 
+export type ProductSpecItem = {
+  label: string;
+  value: string;
+};
+
+export type ProductVariationGroup = {
+  name: string;
+  values: string[];
+};
+
+export type ProductDetailGroup = {
+  title: string;
+  items: ProductSpecItem[];
+};
+
 export type Product = {
   id: number;
   slug: string;
@@ -22,6 +37,8 @@ export type Product = {
   brand: string;
   brandSlug: string;
   category: string;
+  categorySlug?: string;
+  isWishlisted?: boolean;
   price: number;
   compareAtPrice?: number;
   rating: number;
@@ -29,10 +46,14 @@ export type Product = {
   stockLabel: string;
   badge?: string;
   urgency: string;
+  shortDescription?: string;
   description: string;
   bullets: string[];
   colors: string[];
   sizes: string[];
+  attributeRows?: ProductSpecItem[];
+  variationGroups?: ProductVariationGroup[];
+  detailGroups?: ProductDetailGroup[];
   images: string[];
 };
 

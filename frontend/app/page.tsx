@@ -21,7 +21,7 @@ export default async function HomePage() {
 
       {/* Category Grid */}
       <section className="container-main">
-        <SectionHeading title="Kategoriler" action={<Link href="/search?q=" className="text-sm font-semibold text-primary hover:underline">Tümünü Gör</Link>} />
+        <SectionHeading title="Kategoriler" action={<Link href="/search" className="text-sm font-semibold text-primary hover:underline">Tüm Ürünler</Link>} />
         <div className="grid grid-cols-4 gap-3 md:grid-cols-8">
           {categories.map((category) => (
             <Link
@@ -50,7 +50,7 @@ export default async function HomePage() {
               <p className="text-xs text-white/60">Sınırlı süre, kaçırma!</p>
             </div>
           </div>
-          <Link href="/search?q=indirim" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+          <Link href="/search?has_discount=true" className="flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
             Tümünü Gör <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -60,7 +60,7 @@ export default async function HomePage() {
       <section className="container-main">
         <SectionHeading
           title="Öne Çıkan Ürünler"
-          action={<Link href="/search?q=popular" className="text-sm font-semibold text-primary hover:underline">Tümünü Gör</Link>}
+          action={<Link href="/search?is_featured=true" className="text-sm font-semibold text-primary hover:underline">Tümünü Gör</Link>}
         />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {featuredProducts.map((product) => (
@@ -95,7 +95,7 @@ export default async function HomePage() {
       <section className="container-main">
         <SectionHeading
           title="Yeni Gelenler"
-          action={<Link href="/search?q=yeni" className="text-sm font-semibold text-primary hover:underline">Tümünü Gör</Link>}
+          action={<Link href="/search?ordering=-created_at" className="text-sm font-semibold text-primary hover:underline">Tümünü Gör</Link>}
         />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {newArrivals.map((product) => (

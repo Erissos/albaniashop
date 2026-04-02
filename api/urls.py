@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    AddressDetailAPIView,
     AddressListCreateAPIView,
     BrandDetailAPIView,
     BrandListAPIView,
@@ -14,11 +15,15 @@ from .views import (
     LogoutAPIView,
     OrderCreateAPIView,
     OrderHistoryAPIView,
+    PasswordChangeAPIView,
     ProductDetailAPIView,
     ProductListAPIView,
     ProductReviewListAPIView,
     ProfileAPIView,
     RegisterAPIView,
+    SupportTicketListCreateAPIView,
+    UserQuestionListCreateAPIView,
+    UserReviewListAPIView,
     WishlistAPIView,
 )
 
@@ -48,6 +53,11 @@ urlpatterns = [
     path('auth/register/', RegisterAPIView.as_view(), name='auth-register'),
     path('auth/logout/', LogoutAPIView.as_view(), name='auth-logout'),
     path('auth/profile/', ProfileAPIView.as_view(), name='auth-profile'),
+    path('auth/change-password/', PasswordChangeAPIView.as_view(), name='auth-change-password'),
+    path('auth/reviews/', UserReviewListAPIView.as_view(), name='auth-reviews'),
+    path('auth/questions/', UserQuestionListCreateAPIView.as_view(), name='auth-questions'),
+    path('auth/support/', SupportTicketListCreateAPIView.as_view(), name='auth-support'),
     # Addresses
     path('addresses/', AddressListCreateAPIView.as_view(), name='address-list-create'),
+    path('addresses/<int:pk>/', AddressDetailAPIView.as_view(), name='address-detail'),
 ]

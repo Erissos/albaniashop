@@ -1,12 +1,12 @@
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.db.models import Avg
+from django.db.models import Sum
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import Address, WishlistItem
+from accounts.models import Address, ProductQuestion, Profile, SupportTicket, WishlistItem
 from cart.models import Cart, CartItem
 from cart.services import CartService
 from cart.utils import get_or_create_cart
@@ -21,9 +21,13 @@ from .serializers import (
     CategorySerializer,
     LoginSerializer,
     OrderSerializer,
+    PasswordChangeSerializer,
+    ProductQuestionSerializer,
     ProductReviewSerializer,
+    ProfileUpdateSerializer,
     ProductSerializer,
     RegisterSerializer,
+    SupportTicketSerializer,
     WishlistItemSerializer,
 )
 
@@ -194,14 +198,14 @@ class ProductReviewListAPIView(generics.ListAPIView):
 
 
 class FeaturedReviewsAPIView(APIView):
-    """Returns random 5-star approved reviews for the homepage."""
+    """Returns approved reviews for the homepage, prioritizing verified and recent ones."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
         reviews = list(
-            ProductReview.objects.filter(is_approved=True, rating=5)
+            ProductReview.objects.filter(is_approved=True)
             .select_related('user', 'product')
-            .order_by('?')[:6]
+            .order_by('-is_verified_purchase', '-created_at')[:6]
         )
         serializer = ProductReviewSerializer(reviews, many=True, context={'request': request})
         return Response(serializer.data)
@@ -259,14 +263,15 @@ class RegisterAPIView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         d = serializer.validated_data
-        if User.objects.filter(username=d['username']).exists():
-            return Response({'detail': 'Bu kullanıcı adı zaten mevcut.'}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(username=d['phone']).exists():
+            return Response({'detail': 'Bu telefon numarası zaten kayıtlı.'}, status=status.HTTP_400_BAD_REQUEST)
         user = User.objects.create_user(
-            username=d['username'], email=d['email'], password=d['password'],
+            username=d['phone'], email=d['email'], password=d['password'],
             first_name=d.get('first_name', ''), last_name=d.get('last_name', ''),
         )
+        Profile.objects.get_or_create(user=user, defaults={'phone': d['phone']})
         login(request, user)
-        return Response({'username': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
+        return Response({'phone': user.username, 'email': user.email}, status=status.HTTP_201_CREATED)
 
 
 class LogoutAPIView(APIView):
@@ -282,18 +287,65 @@ class ProfileAPIView(APIView):
 
     def get(self, request):
         user = request.user
+        profile, _ = Profile.objects.get_or_create(user=user, defaults={'phone': user.username})
         orders = Order.objects.filter(user=user)
         wishlist_count = WishlistItem.objects.filter(user=user).count()
+        address_count = Address.objects.filter(user=user).count()
+        review_count = ProductReview.objects.filter(user=user).count()
+        question_count = ProductQuestion.objects.filter(user=user).count()
+        open_support_count = SupportTicket.objects.filter(user=user, status__in=['open', 'in_progress']).count()
         return Response({
             'username': user.username,
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
+            'phone': profile.phone or user.username,
             'order_count': orders.count(),
             'active_order_count': orders.exclude(status__in=['delivered', 'cancelled']).count(),
             'wishlist_count': wishlist_count,
-            'total_spent': str(orders.filter(payment_status='paid').aggregate(t=Avg('total_amount'))['t'] or 0),
+            'address_count': address_count,
+            'review_count': review_count,
+            'question_count': question_count,
+            'open_support_count': open_support_count,
+            'total_spent': str(orders.filter(payment_status='paid').aggregate(t=Sum('total_amount'))['t'] or 0),
         })
+
+    def patch(self, request):
+        serializer = ProfileUpdateSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        profile, _ = Profile.objects.get_or_create(user=user, defaults={'phone': user.username})
+        data = serializer.validated_data
+        new_phone = data.get('phone')
+
+        if new_phone and User.objects.exclude(pk=user.pk).filter(username=new_phone).exists():
+            return Response({'phone': ['Bu telefon numarası başka bir hesapta kullanılıyor.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'email' in data:
+            user.email = data['email']
+        if new_phone is not None:
+            user.username = new_phone
+            profile.phone = new_phone
+            profile.save(update_fields=['phone'])
+        user.save(update_fields=['first_name', 'last_name', 'email', 'username'])
+
+        return self.get(request)
+
+
+class PasswordChangeAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data['new_password'])
+        request.user.save(update_fields=['password'])
+        login(request, request.user)
+        return Response({'detail': 'Şifre başarıyla güncellendi.'})
 
 
 # ── Address endpoints ──────────────────────────────────────────────
@@ -304,6 +356,66 @@ class AddressListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Address.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        address = serializer.save(user=self.request.user)
+        if address.is_default:
+            Address.objects.filter(user=self.request.user).exclude(pk=address.pk).update(is_default=False)
+        elif not Address.objects.filter(user=self.request.user).exclude(pk=address.pk).exists():
+            address.is_default = True
+            address.save(update_fields=['is_default'])
+
+
+class AddressDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Address.objects.filter(user=self.request.user)
+
+    def perform_update(self, serializer):
+        address = serializer.save()
+        if address.is_default:
+            Address.objects.filter(user=self.request.user).exclude(pk=address.pk).update(is_default=False)
+        elif not Address.objects.filter(user=self.request.user, is_default=True).exclude(pk=address.pk).exists():
+            address.is_default = True
+            address.save(update_fields=['is_default'])
+
+    def perform_destroy(self, instance):
+        user = instance.user
+        was_default = instance.is_default
+        instance.delete()
+        if was_default:
+            fallback_address = Address.objects.filter(user=user).first()
+            if fallback_address:
+                Address.objects.filter(pk=fallback_address.pk).update(is_default=True)
+
+
+class UserReviewListAPIView(generics.ListAPIView):
+    serializer_class = ProductReviewSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ProductReview.objects.filter(user=self.request.user).select_related('user', 'product').prefetch_related('product__images')
+
+
+class UserQuestionListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = ProductQuestionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return ProductQuestion.objects.filter(user=self.request.user).select_related('product').prefetch_related('product__images')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class SupportTicketListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = SupportTicketSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return SupportTicket.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

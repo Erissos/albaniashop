@@ -40,6 +40,7 @@ function mapToProduct(item: WishlistResponse[number]): Product {
     brand: p.brand ?? 'AlbaniaShop',
     brandSlug: p.brand?.toLowerCase().replace(/\s+/g, '-') ?? '',
     category: p.category,
+    isWishlisted: true,
     price: Number(p.current_price),
     compareAtPrice: p.discounted_price ? Number(p.price) : undefined,
     rating: Number(p.rating_average || 0),
@@ -59,6 +60,12 @@ export default function WishlistPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  function handleWishlistChange(added: boolean, productId: number) {
+    if (!added) {
+      setProducts((current) => current.filter((product) => product.id !== productId));
+    }
+  }
 
   useEffect(() => {
     fetch('/api/wishlist', { cache: 'no-store' })
@@ -110,7 +117,11 @@ export default function WishlistPage() {
       {products.length > 0 ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
-            <ProductCard key={product.slug} product={product} />
+            <ProductCard
+              key={product.slug}
+              product={product}
+              onWishlistChange={handleWishlistChange}
+            />
           ))}
         </div>
       ) : (

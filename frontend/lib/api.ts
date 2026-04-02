@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 
-import { categories as fallbackCategories, featuredProducts as fallbackFeatured, getCategory as getFallbackCategory, getProduct as getFallbackProduct, getProductsByCategory as getFallbackProductsByCategory, newArrivals as fallbackNewArrivals, products as fallbackProducts, searchProducts, type Category, type Product } from '@/lib/data';
+import { categories as fallbackCategories, products as fallbackProducts, type Category, type Product, type ProductDetailGroup, type ProductSpecItem, type ProductVariationGroup } from '@/lib/data';
 
 type ApiImage = {
   image: string;
@@ -31,6 +31,7 @@ type ApiProduct = {
   short_description: string;
   description: string;
   category: string;
+  category_slug: string;
   brand: string | null;
   brand_slug: string | null;
   sku: string;
@@ -108,7 +109,74 @@ function productUrgency(product: ApiProduct) {
   return 'Hızlı teslimat';
 }
 
+function deriveCategorySlug(categoryName: string) {
+  return fallbackCategories.find((category) => category.name === categoryName)?.slug ?? '';
+}
+
+function humanizeVariationType(value: string) {
+  switch (value) {
+    case 'color':
+      return 'Renk';
+    case 'size':
+      return 'Beden';
+    default:
+      return 'Seçenek';
+  }
+}
+
+function buildVariationGroups(product: ApiProduct): ProductVariationGroup[] {
+  const groups = new Map<string, string[]>();
+
+  for (const variation of product.variations) {
+    const label = humanizeVariationType(variation.variation_type);
+    const current = groups.get(label) ?? [];
+    const value = variation.title || variation.value;
+    if (!current.includes(value)) {
+      current.push(value);
+      groups.set(label, current);
+    }
+  }
+
+  return Array.from(groups.entries()).map(([name, values]) => ({ name, values }));
+}
+
+function buildAttributeRows(product: ApiProduct): ProductSpecItem[] {
+  const rows = product.attributes.map((attribute) => ({
+    label: attribute.attribute,
+    value: attribute.display_value || attribute.value,
+  }));
+
+  rows.push(
+    { label: 'Marka', value: product.brand ?? 'AlbaniaShop' },
+    { label: 'Kategori', value: product.category },
+    { label: 'Stok Durumu', value: product.stock_quantity > 0 ? 'Stokta' : 'Tükendi' },
+    { label: 'SKU', value: product.sku },
+  );
+
+  return rows;
+}
+
+function buildDetailGroups(attributeRows: ProductSpecItem[]): ProductDetailGroup[] {
+  if (attributeRows.length === 0) {
+    return [];
+  }
+
+  const titles = ['Ürün Bilgileri', 'Teknik Detaylar', 'Diğer Özellikler'];
+  const groups: ProductDetailGroup[] = [];
+
+  for (let index = 0; index < attributeRows.length; index += 6) {
+    groups.push({
+      title: titles[Math.min(groups.length, titles.length - 1)],
+      items: attributeRows.slice(index, index + 6),
+    });
+  }
+
+  return groups;
+}
+
 function mapProduct(product: ApiProduct): Product {
+  const variationGroups = buildVariationGroups(product);
+  const attributeRows = buildAttributeRows(product);
   const colors = product.variations
     .filter((variation) => variation.variation_type === 'color')
     .map((variation) => variation.title || variation.value);
@@ -126,6 +194,7 @@ function mapProduct(product: ApiProduct): Product {
     brand: product.brand ?? 'AlbaniaShop',
     brandSlug: product.brand_slug ?? product.brand?.toLowerCase().replace(/\s+/g, '-') ?? '',
     category: product.category,
+    categorySlug: product.category_slug || deriveCategorySlug(product.category),
     price: Number(product.current_price),
     compareAtPrice: product.discounted_price ? Number(product.price) : undefined,
     rating: Number(product.rating_average || 0),
@@ -133,10 +202,14 @@ function mapProduct(product: ApiProduct): Product {
     stockLabel: product.stock_quantity > 0 ? (product.stock_quantity <= 5 ? 'Sınırlı Stok' : 'Stokta') : 'Tükendi',
     badge: product.badge_text || undefined,
     urgency: productUrgency(product),
+    shortDescription: product.short_description,
     description: product.description || product.short_description,
     bullets,
     colors: colors.length ? colors : ['Standard'],
     sizes: sizes.length ? sizes : ['Standard'],
+    attributeRows,
+    variationGroups,
+    detailGroups: buildDetailGroups(attributeRows),
     images: product.images.length ? product.images.map((image) => buildAbsoluteMedia(image.image)) : fallbackProducts[0].images,
   };
 }
@@ -185,45 +258,45 @@ function unwrapListResponse<T>(response: T[] | PaginatedResponse<T> | null) {
 
 export async function getLiveCategories() {
   const response = unwrapListResponse(await safeFetch<ApiCategory[] | PaginatedResponse<ApiCategory>>('/catalog/categories/'));
-  return response?.map(mapCategory) ?? fallbackCategories;
+  return response?.map(mapCategory) ?? [];
 }
 
 export async function getLiveProducts(query = '') {
   const suffix = query ? `/catalog/products/${query.startsWith('?') ? query : `?${query}`}` : '/catalog/products/';
   const response = unwrapListResponse(await safeFetch<ApiProduct[] | PaginatedResponse<ApiProduct>>(suffix));
-  return response?.map(mapProduct) ?? fallbackProducts;
+  return response?.map(mapProduct) ?? [];
 }
 
 export async function getLiveFeaturedProducts() {
   const response = unwrapListResponse(await safeFetch<ApiProduct[] | PaginatedResponse<ApiProduct>>('/catalog/products/?is_featured=true'));
-  return response?.map(mapProduct) ?? fallbackFeatured;
+  return response?.map(mapProduct) ?? [];
 }
 
 export async function getLiveNewArrivals() {
   const response = unwrapListResponse(await safeFetch<ApiProduct[] | PaginatedResponse<ApiProduct>>('/catalog/products/?ordering=-created_at'));
-  return response?.map(mapProduct).slice(0, 4) ?? fallbackNewArrivals;
+  return response?.map(mapProduct).slice(0, 4) ?? [];
 }
 
 export async function getLiveProduct(slug: string) {
   const response = await safeFetch<ApiProduct>(`/catalog/products/${slug}/`);
-  return response ? mapProduct(response) : getFallbackProduct(slug);
+  return response ? mapProduct(response) : null;
 }
 
 export async function getLiveCategoryProducts(slug: string) {
   const response = unwrapListResponse(await safeFetch<ApiProduct[] | PaginatedResponse<ApiProduct>>(`/catalog/products/?category__slug=${encodeURIComponent(slug)}`));
-  return response?.map(mapProduct) ?? getFallbackProductsByCategory(slug);
+  return response?.map(mapProduct) ?? [];
 }
 
 export async function getLiveCategory(slug: string) {
   const categories = await getLiveCategories();
-  return categories.find((category) => category.slug === slug) ?? getFallbackCategory(slug);
+  return categories.find((category) => category.slug === slug) ?? null;
 }
 
 export async function getSearchResults(query: string) {
   const term = query.trim();
-  if (!term) return fallbackProducts;
+  if (!term) return getLiveProducts();
   const response = unwrapListResponse(await safeFetch<ApiProduct[] | PaginatedResponse<ApiProduct>>(`/catalog/products/?search=${encodeURIComponent(term)}`));
-  return response?.map(mapProduct) ?? searchProducts(term);
+  return response?.map(mapProduct) ?? [];
 }
 
 export async function getCart() {

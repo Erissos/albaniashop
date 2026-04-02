@@ -36,19 +36,17 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <FilterSidebar />
         <div>
-          {/* Sort chips */}
-          <div className="mb-4 flex flex-wrap gap-2">
-            {['En Çok Satan', 'En Yeniler', 'Fiyat (Artan)', 'Fiyat (Azalan)', 'En Çok Değerlendirilen'].map((chip) => (
-              <button key={chip} className="rounded-lg border border-border bg-white px-3 py-1.5 text-sm text-muted transition hover:border-primary hover:text-primary">
-                {chip}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
-            {products.map((product) => (
-              <ProductCard key={product.slug} product={product} />
-            ))}
-          </div>
+          {products.length ? (
+            <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard key={product.slug} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="card p-8 text-center text-sm text-muted">
+              Bu kategoride henüz yayında ürün yok. Diğer kategorilere göz atabilir veya daha sonra tekrar deneyebilirsiniz.
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -12,8 +13,14 @@ type SearchResult = {
 };
 
 export function SearchAutocomplete() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
+
+  function submitSearch() {
+    const term = query.trim();
+    router.push(term ? `/search?q=${encodeURIComponent(term)}` : '/search');
+  }
 
   useEffect(() => {
     const term = query.trim();
@@ -37,7 +44,13 @@ export function SearchAutocomplete() {
 
   return (
     <div className="relative w-full max-w-2xl">
-      <div className="flex h-11 items-center gap-3 rounded-lg border border-border bg-surface px-4">
+      <form
+        className="flex h-11 items-center gap-3 rounded-lg border border-border bg-surface px-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitSearch();
+        }}
+      >
         <Search className="h-4 w-4 text-muted" />
         <input
           value={query}
@@ -45,16 +58,17 @@ export function SearchAutocomplete() {
           className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-muted/60"
           placeholder="Ürün, kategori veya marka ara"
         />
-        <button className="shrink-0 rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark">
+        <button type="submit" className="shrink-0 rounded-md bg-primary px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-primary-dark">
           Ara
         </button>
-      </div>
+      </form>
       {results.length > 0 ? (
         <div className="absolute left-0 right-0 top-[calc(100%+4px)] z-50 rounded-card border border-border bg-white p-2 shadow-elevated">
           {results.map((result) => (
             <Link
               key={result.slug}
               href={`/product/${result.slug}`}
+              onClick={() => setResults([])}
               className="flex items-center justify-between rounded-lg px-3 py-2.5 transition hover:bg-surface"
             >
               <div>

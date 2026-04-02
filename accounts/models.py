@@ -49,3 +49,48 @@ class WishlistItem(models.Model):
 
 	def __str__(self):
 		return f'{self.user.username} -> {self.product.name}'
+
+
+class ProductQuestion(models.Model):
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='product_questions', on_delete=models.CASCADE)
+	product = models.ForeignKey('catalog.Product', related_name='questions', on_delete=models.CASCADE)
+	question = models.TextField()
+	answer = models.TextField(blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return f'{self.user.username} -> {self.product.name} question'
+
+
+class SupportTicket(models.Model):
+	class Category(models.TextChoices):
+		ORDER = 'order', _('Order')
+		PAYMENT = 'payment', _('Payment')
+		DELIVERY = 'delivery', _('Delivery')
+		ACCOUNT = 'account', _('Account')
+		TECHNICAL = 'technical', _('Technical')
+		OTHER = 'other', _('Other')
+
+	class Status(models.TextChoices):
+		OPEN = 'open', _('Open')
+		IN_PROGRESS = 'in_progress', _('In Progress')
+		RESOLVED = 'resolved', _('Resolved')
+
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='support_tickets', on_delete=models.CASCADE)
+	subject = models.CharField(max_length=140)
+	category = models.CharField(max_length=20, choices=Category.choices, default=Category.OTHER)
+	message = models.TextField()
+	preferred_contact = models.CharField(max_length=20, blank=True)
+	status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPEN)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['-created_at']
+
+	def __str__(self):
+		return f'{self.user.username} - {self.subject}'

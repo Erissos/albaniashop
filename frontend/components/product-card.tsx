@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { WishlistButton } from '@/components/wishlist-button';
@@ -8,9 +8,10 @@ import { Product, formatLek } from '@/lib/data';
 
 type ProductCardProps = {
   product: Product;
+  onWishlistChange?: (added: boolean, productId: number) => void;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, onWishlistChange }: ProductCardProps) {
   const discount = product.compareAtPrice
     ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
     : null;
@@ -42,7 +43,13 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Wishlist button */}
-        <WishlistButton productId={product.id} />
+        <WishlistButton
+          productId={product.id}
+          initialAdded={Boolean(product.isWishlisted)}
+          {...(onWishlistChange
+            ? { onChange: (added: boolean) => onWishlistChange(added, product.id) }
+            : {})}
+        />
       </div>
 
       {/* Info */}

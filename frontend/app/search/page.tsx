@@ -2,28 +2,54 @@ import Link from 'next/link';
 import { Search } from 'lucide-react';
 
 import { ProductCard } from '@/components/product-card';
-import { getSearchResults } from '@/lib/api';
+import { getLiveProducts, getSearchResults } from '@/lib/api';
 
-export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+type SearchPageParams = {
+  q?: string;
+  is_featured?: string;
+  ordering?: string;
+  has_discount?: string;
+};
+
+export default async function SearchPage({ searchParams }: { searchParams: Promise<SearchPageParams> }) {
   const params = await searchParams;
   const query = params.q ?? '';
-  const results = await getSearchResults(query);
+  const filters = new URLSearchParams();
+
+  if (params.is_featured === 'true') {
+    filters.set('is_featured', 'true');
+  }
+
+  if (params.ordering) {
+    filters.set('ordering', params.ordering);
+  }
+
+  const baseResults = query.trim()
+    ? await getSearchResults(query)
+    : await getLiveProducts(filters.toString());
+
+  const results = params.has_discount === 'true'
+    ? baseResults.filter((product) => Boolean(product.compareAtPrice))
+    : baseResults;
+
+  const heading = query.trim()
+    ? `“${query}” için sonuçlar`
+    : params.is_featured === 'true'
+      ? 'Öne çıkan ürünler'
+      : params.ordering === '-created_at'
+        ? 'Yeni gelen ürünler'
+        : params.has_discount === 'true'
+          ? 'İndirimli ürünler'
+          : 'Tüm ürünler';
 
   return (
     <div className="container-main space-y-6 py-6">
       <div>
-        <h1 className="text-xl font-bold text-ink">
-          &ldquo;{query || 'tüm ürünler'}&rdquo; için sonuçlar
-        </h1>
+        <h1 className="text-xl font-bold text-ink">{heading}</h1>
         <p className="mt-1 text-sm text-muted">{results.length} ürün bulundu</p>
       </div>
-
-      <div className="flex flex-wrap gap-2">
-        {['Önerilen', 'Hızlı Teslimat', 'Kampanyalı', 'Yüksek Puan', '100 TL Altı'].map((chip) => (
-          <button key={chip} className="rounded-lg border border-border bg-white px-3 py-1.5 text-sm font-medium text-muted transition hover:border-primary hover:text-primary">
-            {chip}
-          </button>
-        ))}
+      <div className="rounded-card border border-border bg-surface px-4 py-3 text-sm text-muted">
+        Sonuçlar mağazadaki canlı ürün verilerinden listelenir. Arama terimini değiştirerek veya kategoriler üzerinden gezinerek farklı ürünlere ulaşabilirsiniz.
       </div>
 
       {results.length ? (

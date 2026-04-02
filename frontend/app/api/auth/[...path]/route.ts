@@ -15,7 +15,12 @@ async function forward(req: NextRequest, method: string) {
   const path = req.nextUrl.pathname.replace('/api/auth/', '');
   const res = await fetch(`${API}/auth/${path}/`, init);
   const data = await res.json().catch(() => ({}));
-  return NextResponse.json(data, { status: res.status });
+  const response = NextResponse.json(data, { status: res.status });
+  const setCookie = res.headers.get('set-cookie');
+  if (setCookie) {
+    response.headers.set('set-cookie', setCookie);
+  }
+  return response;
 }
 
 export async function POST(req: NextRequest) { return forward(req, 'POST'); }
